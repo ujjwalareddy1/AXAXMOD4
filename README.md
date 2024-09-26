@@ -106,6 +106,13 @@ This function allows any user to burn (destroy) their tokens. It takes one param
 This function allows a user to transfer tokens to another address. It takes two parameters: _reciever (the address to receive the tokens) and amount (the number of tokens to transfer). It checks if the caller has enough balance, approves the transfer, and then transfers the tokens using the transferFrom function.
 
 ```
+ function redeemedITems() view public returns(string[] memory){
+       return claimedItems[msg.sender];
+    }
+```
+This function returns the redeemed item to the caller.
+
+```
     function getBalance() external view returns(uint256) {
         return this.balanceOf(msg.sender);
     }
@@ -117,7 +124,7 @@ This function returns the balance of the caller. It is marked as view since it d
 
 ```
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity 0.8.22;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
@@ -127,6 +134,7 @@ contract DegenGamingToken is ERC20 {
     mapping(uint => string) public itemInfo;
 
     mapping(address => string[]) public claimedItems;
+
 
     address private owner;
     constructor() ERC20("Degen Gaming Token", "DGT"){
@@ -157,8 +165,12 @@ contract DegenGamingToken is ERC20 {
         string memory itemName = itemInfo[_itemNo];
         uint price = items[_itemNo][itemName];
         require(balanceOf(msg.sender) >= price, "Insufficient balance to redeem");
-        _transfer(msg.sender, owner, price);
-       
+        _transfer(msg.sender, address(this), price);
+        claimedItems[msg.sender].push(itemInfo[_itemNo]);
+    }
+
+    function redeemedITems() view public returns(string[] memory){
+       return claimedItems[msg.sender];
     }
 
     function burn(uint256 amount) external {
